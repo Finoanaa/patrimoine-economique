@@ -5,8 +5,16 @@ class Patrimoine {
     this.possessions = possessions; // [Possession, Possession, ...]
   }
   getValeur(date) {
-    return 
+  // Calculer la valeur totale du patrimoine à la date spécifiée
+  let valeurTotale = 0;
+  for (const possession of this.possessions) {
+    // Supposons que chaque possession a une propriété "valeur" définie
+    if (possession.dateAcquisition <= date) {
+      valeurTotale += possession.valeur;
+    }
   }
+  return valeurTotale;
+}
   addPossession(possession) {
     this.possessions.push(possession);
   }
