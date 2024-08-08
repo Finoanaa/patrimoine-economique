@@ -1,3 +1,4 @@
+
 export default class Patrimoine {
   constructor(possesseur, possessions) {
     this.possesseur = possesseur;
@@ -18,10 +19,5 @@ export default class Patrimoine {
     } else {
       this.possessions.push(possession);
     }
-  }
-  removePossession(possession) {
-    this.possessions = this.possessions.filter(
-      (p) => p.libelle !== possession.libelle,
-    );
   }
 }
