@@ -1,4 +1,5 @@
 
+
 export default class Patrimoine {
   constructor(possesseur, possessions) {
     this.possesseur = possesseur;
