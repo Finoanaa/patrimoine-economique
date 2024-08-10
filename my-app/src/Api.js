@@ -2,7 +2,7 @@
 
 export async function readFile() {
     try {
-      const response = await fetch('/api/read-file');
+      const response = await fetch('/Api/read-file');
       const result = await response.json();
       if (result.status === 'OK') {
         return result.data;
@@ -16,7 +16,7 @@ export async function readFile() {
   
   export async function writeFile(data) {
     try {
-      const response = await fetch('/api/write-file', {
+      const response = await fetch('/Api/write-file', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
