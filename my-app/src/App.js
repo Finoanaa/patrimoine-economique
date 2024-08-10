@@ -1,32 +1,45 @@
-// src/App.js
-
 import React, { useEffect, useState } from 'react';
+import PossessionsTable from './components/PossessionsTable';
+import PatrimoineCalculator from './components/PatrimoineCalculator';
+
 import { readFile, writeFile } from './Api';
 
 const App = () => {
-  const [data, setData] = useState(null);
+  const [possessions, setPossessions] = useState([]);
+  const [patrimoineValue, setPatrimoineValue] = useState(null);
 
   useEffect(() => {
     async function fetchData() {
       const result = await readFile();
-      setData(result);
+      setPossessions(result);
     }
     fetchData();
   }, []);
 
   const handleWrite = async () => {
-    const newData = { };
+    const newData = { /* Ajoutez les nouvelles données ici si nécessaire */ };
     await writeFile(newData);
     // Recharger les données après écriture si nécessaire
     const result = await readFile();
-    setData(result);
+    setPossessions(result);
+  };
+
+  const handleCalculatePatrimoine = (calculatedValue) => {
+    setPatrimoineValue(calculatedValue);
   };
 
   return (
     <div>
-      <h1>Contenu du fichier</h1>
-      <pre>{JSON.stringify(data, null, 2)}</pre>
+      <h1>Liste des Possessions</h1>
+      <PossessionsTable possessions={possessions} />
       <button onClick={handleWrite}>Écrire dans le fichier</button>
+      <PatrimoineCalculator possessions={possessions} onCalculate={handleCalculatePatrimoine} />
+      {patrimoineValue !== null && (
+        <div>
+          <h2>Valeur du Patrimoine:</h2>
+          <p>{patrimoineValue} €</p>
+        </div>
+      )}
     </div>
   );
 };
