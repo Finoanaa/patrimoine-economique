@@ -1,8 +1,14 @@
 import React, { useEffect, useState } from 'react';
+import { Routes, Route } from 'react-router-dom';
 import PossessionsTable from './components/PossessionsTable';
 import PatrimoineCalculator from './components/PatrimoineCalculator';
+import Header from './components/Header';
+import Patrimoine from './pages/Patrimoine';
+import PossessionList from './pages/PossessionList';
+import CreatePossession from './pages/CreatePossession';
+import UpdatePossession from './pages/UpdatePossession';
 
-import { readFile, writeFile } from './Api';
+import { readFile, writeFile } from './api';
 
 const App = () => {
   const [possessions, setPossessions] = useState([]);
@@ -29,19 +35,31 @@ const App = () => {
   };
 
   return (
-    <div>
-      <h1>Liste des Possessions</h1>
-      <PossessionsTable possessions={possessions} />
-      <button onClick={handleWrite}>Écrire dans le fichier</button>
-      <PatrimoineCalculator possessions={possessions} onCalculate={handleCalculatePatrimoine} />
-      {patrimoineValue !== null && (
-        <div>
-          <h2>Valeur du Patrimoine:</h2>
-          <p>{patrimoineValue} €</p>
+    <>
+    <Header />
+    <Routes>
+      <Route path="/patrimoine" component={Patrimoine} />
+      <Route path="/possession/create" component={CreatePossession} />
+      <Route path="/possession/:libelle/update" component={UpdatePossession} />
+      <Route path="/possession" component={PossessionList} />
+      <Route path="/" element={
+          <div>
+          <h1>Liste des Possessions</h1>
+          <PossessionsTable possessions={possessions} />
+          <button onClick={handleWrite}>Écrire dans le fichier</button>
+          <PatrimoineCalculator possessions={possessions} onCalculate={handleCalculatePatrimoine} />
+          {patrimoineValue !== null && (
+            <div>
+              <h2>Valeur du Patrimoine:</h2>
+              <p>{patrimoineValue} €</p>
+            </div>
+          )}
         </div>
-      )}
-    </div>
+      } />
+      </Routes>
+    </>
   );
 };
+
 
 export default App;
