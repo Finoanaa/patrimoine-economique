@@ -1,7 +1,6 @@
 import React from 'react';
 import { Table } from 'react-bootstrap';
 
-// Exemple de données, remplace-les par les données réelles ou passe-les en tant que props
 const possessions = [
   {
     libelle: 'MacBook Pro',
@@ -19,7 +18,7 @@ const possessions = [
     amortissement: null,
     valeurActuelle: 500000,
   },
-  // Ajoute d'autres possessions si nécessaire
+  
 ];
 
 const PossessionsTable = () => {

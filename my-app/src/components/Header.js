@@ -5,7 +5,7 @@ import { LinkContainer } from 'react-router-bootstrap';
 
 const Header = () => (
   <Navbar bg="light" expand="lg">
-    <Navbar.Brand href="/">Mon Projet</Navbar.Brand>
+    <Navbar.Brand href="/">Possession</Navbar.Brand>
     <Navbar.Toggle aria-controls="basic-navbar-nav" />
     <Navbar.Collapse id="basic-navbar-nav">
       <Nav className="mr-auto">
@@ -13,7 +13,7 @@ const Header = () => (
           <Nav.Link>Patrimoine</Nav.Link>
         </LinkContainer>
         <LinkContainer to="/possessions">
-          <Nav.Link>Possessions</Nav.Link>
+          <Nav.Link>CRUD Possessions</Nav.Link>
         </LinkContainer>
       </Nav>
     </Navbar.Collapse>

@@ -4,10 +4,13 @@ import express from 'express';
 import fs from 'node:fs/promises';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import cors from 'cors';
 
 const app = express();
-const port = 3001;
+const port = process.env.PORT || 3000;
 
+// Middleware
+app.use(cors({ origin: 'http://localhost:3000' })); 
 app.use(express.json());
 
 // Crée un équivalent de __dirname
@@ -15,8 +18,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // Chemin vers le fichier JSON
-const filePath = path.join(__dirname, 'data.json');
-
+const filePath = path.join(__dirname, '../data/data.json');
 
 // Fonction pour lire les données depuis le fichier JSON
 const readData = async () => {
@@ -47,32 +49,17 @@ app.get('/api/read-file', async (req, res) => {
   }
 });
 
-// Endpoint pour lire un fichier
-app.get('/api/read-file', async (req, res) => {
-  const filePath = path.join(__dirname, 'data.json');
-  try {
-    const data = await fs.readFile(filePath, { encoding: 'utf8' });
-    res.json({ status: 'OK', data: JSON.parse(data) });
-  } catch (err) {
-    res.status(500).json({ status: 'ERROR', error: err.message });
-  }
-});
-
 // Endpoint pour écrire dans un fichier
 app.post('/api/write-file', async (req, res) => {
-  const filePath = path.join(__dirname, 'data.json');
   try {
-    await fs.writeFile(filePath, JSON.stringify(req.body), { encoding: 'utf8' });
+    await writeData(req.body);
     res.json({ status: 'OK' });
   } catch (err) {
     res.status(500).json({ status: 'ERROR', error: err.message });
   }
 });
 
-
-//POSSESSION
-
-// Endpoint pour obtenir la liste des possessions
+// Endpoints pour les possessions
 app.get('/api/possessions', async (req, res) => {
   try {
     const data = await readData();
@@ -83,7 +70,6 @@ app.get('/api/possessions', async (req, res) => {
   }
 });
 
-// Endpoint pour créer une nouvelle possession
 app.post('/api/possessions', async (req, res) => {
   try {
     const { libelle, valeur, dateDebut, taux } = req.body;
@@ -100,7 +86,6 @@ app.post('/api/possessions', async (req, res) => {
   }
 });
 
-// Endpoint pour mettre à jour une possession par libelle
 app.put('/api/possessions/:libelle', async (req, res) => {
   try {
     const { libelle, dateFin } = req.body;
@@ -119,7 +104,6 @@ app.put('/api/possessions/:libelle', async (req, res) => {
   }
 });
 
-// Endpoint pour fermer une possession (mettre à jour dateFin à la date actuelle)
 app.put('/api/possessions/:libelle/close', async (req, res) => {
   try {
     const data = await readData();
@@ -136,10 +120,7 @@ app.put('/api/possessions/:libelle/close', async (req, res) => {
   }
 });
 
-
-//PATRIMOINE
-
-// Endpoint pour obtenir la valeur du patrimoine par date
+// Endpoints pour le patrimoine
 app.get('/api/patrimoine/:date', async (req, res) => {
   try {
     const date = req.params.date;
@@ -156,7 +137,6 @@ app.get('/api/patrimoine/:date', async (req, res) => {
   }
 });
 
-// Endpoint pour obtenir la valeur du patrimoine sur une plage de dates
 app.post('/api/patrimoine/range', async (req, res) => {
   try {
     const { type, dateDebut, dateFin, jour } = req.body;
@@ -173,6 +153,7 @@ app.post('/api/patrimoine/range', async (req, res) => {
   }
 });
 
+// Démarrer le serveur
 app.listen(port, () => {
   console.log(`Serveur API en écoute sur http://localhost:${port}`);
 });

@@ -1,8 +1,6 @@
 import React, { useState } from 'react';
 import DatePicker from 'react-datepicker';
 import { Button, Form } from 'react-bootstrap';
-
-// Exemple de données, remplace-les par les données réelles
 const possessions = [
   {
     valeurActuelle: 3800000,
@@ -10,7 +8,7 @@ const possessions = [
   {
     valeurActuelle: 500000,
   },
-  // Ajoute d'autres possessions si nécessaire
+  
 ];
 
 const PatrimoineCalculator = () => {
@@ -18,7 +16,6 @@ const PatrimoineCalculator = () => {
   const [valeurPatrimoine, setValeurPatrimoine] = useState(0);
 
   const handleCalculate = () => {
-    // Exemple de calcul, remplace-le par le calcul réel basé sur les données et la date
     const totalValeur = possessions.reduce((sum, item) => sum + item.valeurActuelle, 0);
     setValeurPatrimoine(totalValeur);
   };

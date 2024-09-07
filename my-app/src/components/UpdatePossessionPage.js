@@ -1,4 +1,3 @@
-// src/components/UpdatePossessionPage.js
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
@@ -17,7 +16,8 @@ const UpdatePossessionPage = () => {
   useEffect(() => {
     const fetchPossession = async () => {
       try {
-        const response = await axios.get(`/possession/${libelle}`);
+        // Requête pour récupérer les détails de la possession via Axios
+        const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/possessions/${libelle}`);
         if (response.data) {
           setPossession(response.data);
           setDateFin(new Date(response.data.dateFin || new Date()));
@@ -38,7 +38,8 @@ const UpdatePossessionPage = () => {
     e.preventDefault();
     if (dateFin) {
       try {
-        await axios.put(`/possession/${libelle}`, { dateFin: dateFin.toISOString() });
+        // Mise à jour des données de la possession via Axios
+        await axios.put(`${process.env.REACT_APP_API_URL}/api/possessions/${libelle}`, { dateFin: dateFin.toISOString() });
         navigate('/possessions'); // Redirection vers la liste des possessions après la mise à jour
       } catch (error) {
         setError('Erreur lors de la mise à jour de la possession');

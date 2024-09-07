@@ -1,29 +1,45 @@
-// src/components/PossessionListPage.js
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Table, Button, Container } from 'react-bootstrap';
-import { getPossessions, closePossession } from '../api';
+import { Table, Button, Container, Alert } from 'react-bootstrap';
+import axios from 'axios';
 
 const PossessionListPage = () => {
   const [possessions, setPossessions] = useState([]);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    getPossessions()
-      .then(data => setPossessions(data))
-      .catch(error => console.error(error));
+    const fetchPossessions = async () => {
+      try {
+        const response = await axios.get('/api/possessions'); // Assurez-vous que le proxy est configuré correctement
+        if (response.data.status === 'OK') {
+          setPossessions(response.data.items);
+        } else {
+          setError('Erreur lors de la récupération des possessions: ' + response.data.error);
+        }
+      } catch (error) {
+        setError('Erreur lors de la récupération des possessions: ' + error.message);
+      }
+    };
+
+    fetchPossessions();
   }, []);
 
-  const handleClose = (libelle) => {
+  const handleClose = async (libelle) => {
     if (libelle) {
-      closePossession(libelle)
-        .then(() => {
-          setPossessions(possessions.map(p => 
-            p.data.libelle === libelle ? { ...p, data: { ...p.data, dateFin: new Date().toISOString() } } : p
-          ));
-        })
-        .catch(error => console.error('Erreur lors de la fermeture de la possession:', error));
+      try {
+        await axios.put(`/api/possessions/${libelle}/close`); // Utilisez PUT pour fermer la possession
+        setPossessions(prevPossessions =>
+          prevPossessions.map(p =>
+            p.data.libelle === libelle
+              ? { ...p, data: { ...p.data, dateFin: new Date().toISOString() } }
+              : p
+          )
+        );
+      } catch (error) {
+        setError('Erreur lors de la fermeture de la possession: ' + error.message);
+      }
     } else {
-      console.error('Libelle est null ou undefined');
+      setError('Libelle est null ou undefined');
     }
   };
 
@@ -45,6 +61,7 @@ const PossessionListPage = () => {
       <Link to="/possession/create">
         <Button>Create Possession</Button>
       </Link>
+      {error && <Alert variant="danger">{error}</Alert>}
       <Table striped bordered hover>
         <thead>
           <tr>
@@ -58,20 +75,26 @@ const PossessionListPage = () => {
           </tr>
         </thead>
         <tbody>
-          {possessions.map(possession => (
-            <tr key={possession.data.libelle}>
-              <td>{possession.data.libelle}</td>
-              <td>{possession.data.valeur}</td>
-              <td>{possession.data.dateDebut}</td>
-              <td>{possession.data.dateFin || 'En cours'}</td>
-              <td>{possession.data.taux || 'N/A'}</td>
-              <td>{calculateCurrentValue(possession).toFixed(2)}</td>
-              <td>
-                <Link to={`/possession/${possession.data.libelle}/update`}>Edit</Link>
-                <Button onClick={() => handleClose(possession.data.libelle)}>Close</Button>
-              </td>
+          {possessions.length > 0 ? (
+            possessions.map((possession, index) => (
+              <tr key={index}>
+                <td>{possession.data.libelle}</td>
+                <td>{possession.data.valeur}</td>
+                <td>{possession.data.dateDebut}</td>
+                <td>{possession.data.dateFin || 'En cours'}</td>
+                <td>{possession.data.taux || 'N/A'}</td>
+                <td>{calculateCurrentValue(possession).toFixed(2)}</td>
+                <td>
+                  <Link to={`/possession/${possession.data.libelle}/update`}>Edit</Link>
+                  <Button onClick={() => handleClose(possession.data.libelle)}>Close</Button>
+                </td>
+              </tr>
+            ))
+          ) : (
+            <tr>
+              <td colSpan="7">Aucune possession disponible</td>
             </tr>
-          ))}
+          )}
         </tbody>
       </Table>
     </Container>

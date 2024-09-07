@@ -7,8 +7,8 @@ import Patrimoine from './pages/Patrimoine';
 import PossessionList from './pages/PossessionList';
 import CreatePossession from './pages/CreatePossession';
 import UpdatePossession from './pages/UpdatePossession';
+import { readFile, writeFile } from './api-temp';
 
-import { readFile, writeFile } from './api';
 
 const App = () => {
   const [possessions, setPossessions] = useState([]);
@@ -23,7 +23,7 @@ const App = () => {
   }, []);
 
   const handleWrite = async () => {
-    const newData = { /* Ajoutez les nouvelles données ici si nécessaire */ };
+    const newData = {  };
     await writeFile(newData);
     // Recharger les données après écriture si nécessaire
     const result = await readFile();
@@ -36,30 +36,29 @@ const App = () => {
 
   return (
     <>
-    <Header />
-    <Routes>
-      <Route path="/patrimoine" component={Patrimoine} />
-      <Route path="/possession/create" component={CreatePossession} />
-      <Route path="/possession/:libelle/update" component={UpdatePossession} />
-      <Route path="/possession" component={PossessionList} />
-      <Route path="/" element={
+      <Header />
+      <Routes>
+        <Route path="/patrimoine" element={<Patrimoine />} />
+        <Route path="/possession/create" element={<CreatePossession />} />
+        <Route path="/possession/:libelle/update" element={<UpdatePossession />} />
+        <Route path="/possessions" element={<PossessionList />} />
+        <Route path="/" element={
           <div>
-          <h1>Liste des Possessions</h1>
-          <PossessionsTable possessions={possessions} />
-          <button onClick={handleWrite}>Écrire dans le fichier</button>
-          <PatrimoineCalculator possessions={possessions} onCalculate={handleCalculatePatrimoine} />
-          {patrimoineValue !== null && (
-            <div>
-              <h2>Valeur du Patrimoine:</h2>
-              <p>{patrimoineValue} €</p>
-            </div>
-          )}
-        </div>
-      } />
+            <h1>Liste des Possessions</h1>
+            <PossessionsTable possessions={possessions} />
+            <button onClick={handleWrite}>Écrire dans le fichier</button>
+            <PatrimoineCalculator possessions={possessions} onCalculate={handleCalculatePatrimoine} />
+            {patrimoineValue !== null && (
+              <div>
+                <h2>Valeur du Patrimoine:</h2>
+                <p>{patrimoineValue} €</p>
+              </div>
+            )}
+          </div>
+        } />
       </Routes>
     </>
   );
 };
-
 
 export default App;

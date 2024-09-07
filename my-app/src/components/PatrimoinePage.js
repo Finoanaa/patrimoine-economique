@@ -1,9 +1,9 @@
-// src/components/PatrimoinePage.js
 import React, { useState, useEffect } from 'react';
 import { Container, Row, Col, Button, Form, Table } from 'react-bootstrap';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import { Line } from 'react-chartjs-2';
+import axios from 'axios';
 
 const PatrimoinePage = () => {
   const [dateDebut, setDateDebut] = useState(new Date());
@@ -14,12 +14,11 @@ const PatrimoinePage = () => {
 
   const fetchPossessions = async () => {
     try {
-      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/possessions`);
-      const result = await response.json();
-      if (result.status === 'OK') {
-        setPossessions(result.items);
+      const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/possessions`);
+      if (response.data.status === 'OK') {
+        setPossessions(response.data.items);
       } else {
-        console.error('Erreur lors de la récupération des possessions:', result.error);
+        console.error('Erreur lors de la récupération des possessions:', response.data.error);
       }
     } catch (error) {
       console.error('Erreur lors de la récupération des possessions:', error);
@@ -32,20 +31,14 @@ const PatrimoinePage = () => {
 
   const handleValidateRange = async () => {
     try {
-      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/patrimoine/range`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          type: 'month',
-          dateDebut: dateDebut.toISOString(),
-          dateFin: dateFin.toISOString(),
-          jour,
-        }),
+      const response = await axios.post(`${process.env.REACT_APP_API_URL}/api/patrimoine/range`, {
+        type: 'month',
+        dateDebut: dateDebut.toISOString(),
+        dateFin: dateFin.toISOString(),
+        jour,
       });
-      const data = await response.json();
 
+      const data = response.data;
       const formattedData = {
         labels: data.map(item => item.date),
         datasets: [
@@ -67,10 +60,8 @@ const PatrimoinePage = () => {
   const handleValidateDate = async () => {
     try {
       if (dateDebut) {
-        const response = await fetch(`${process.env.REACT_APP_API_URL}/api/patrimoine/${dateDebut.toISOString()}`);
-        const data = await response.json();
-
-        console.log('Valeur du patrimoine à la date spécifiée:', data.valeur);
+        const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/patrimoine/${dateDebut.toISOString()}`);
+        console.log('Valeur du patrimoine à la date spécifiée:', response.data.valeur);
       } else {
         console.error('La date de début doit être définie');
       }
@@ -110,7 +101,10 @@ const PatrimoinePage = () => {
       </Row>
       <Row>
         <Col>
-          <Line data={chartData} />
+        {chartData && chartData.labels && chartData.labels.length > 0 && (
+  <Line data={chartData} />
+)}
+
         </Col>
       </Row>
       <Row>
