@@ -46,7 +46,7 @@ const App = () => {
           <div>
             <h1>Liste des Possessions</h1>
             <PossessionsTable possessions={possessions} />
-            <button onClick={handleWrite}>Écrire dans le fichier</button>
+            <button onClick={handleWrite}>Edit</button>
             <PatrimoineCalculator possessions={possessions} onCalculate={handleCalculatePatrimoine} />
             {patrimoineValue !== null && (
               <div>
