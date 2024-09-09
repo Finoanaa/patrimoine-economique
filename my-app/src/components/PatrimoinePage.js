@@ -4,6 +4,7 @@ import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import { Line } from 'react-chartjs-2';
 import axios from 'axios';
+import PatrimoineCalculator from './PatrimoineCalculator'; // Importez PatrimoineCalculator
 
 const PatrimoinePage = () => {
   const [dateDebut, setDateDebut] = useState(new Date());
@@ -15,6 +16,7 @@ const PatrimoinePage = () => {
   const fetchPossessions = async () => {
     try {
       const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/possessions`);
+      console.log('Données reçues:', response.data.items); // Log les données reçues
       if (response.data.status === 'OK') {
         setPossessions(response.data.items);
       } else {
@@ -24,6 +26,7 @@ const PatrimoinePage = () => {
       console.error('Erreur lors de la récupération des possessions:', error);
     }
   };
+  
 
   useEffect(() => {
     fetchPossessions();
@@ -101,10 +104,9 @@ const PatrimoinePage = () => {
       </Row>
       <Row>
         <Col>
-        {chartData && chartData.labels && chartData.labels.length > 0 && (
-  <Line data={chartData} />
-)}
-
+          {chartData && chartData.labels && chartData.labels.length > 0 && (
+            <Line data={chartData} />
+          )}
         </Col>
       </Row>
       <Row>
@@ -133,16 +135,22 @@ const PatrimoinePage = () => {
             <tbody>
               {possessions.map((possession, index) => (
                 <tr key={index}>
-                  <td>{possession.data.libelle}</td>
-                  <td>{possession.data.valeur}</td>
-                  <td>{possession.data.dateDebut}</td>
-                  <td>{possession.data.dateFin || 'En cours'}</td>
-                  <td>{possession.data.tauxAmortissement || 'N/A'}</td>
-                  <td>{possession.data.valeurConstante}</td>
+                  <td>{possession.libelle || 'Inconnu'}</td>
+                  <td>{possession.valeur || 'N/A'}</td>
+                  <td>{new Date(possession.dateDebut).toLocaleDateString() || 'Inconnu'}</td>
+                  <td>{possession.dateFin ? new Date(possession.dateFin).toLocaleDateString() : 'En cours'}</td>
+                  <td>{possession.tauxAmortissement || 'N/A'}</td>
+                  <td>{(possession.valeur - (possession.valeur * (0.01 * possession.tauxAmortissement))).toFixed(2) || 'N/A'}</td>
                 </tr>
               ))}
             </tbody>
           </Table>
+        </Col>
+      </Row>
+      <Row>
+        <Col>
+          <h2>Calculateur de Patrimoine</h2>
+          <PatrimoineCalculator possessions={possessions} />
         </Col>
       </Row>
     </Container>

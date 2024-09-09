@@ -1,102 +1,109 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { Table, Button, Container, Alert } from 'react-bootstrap';
+import { Container, Row, Col, Table, Button } from 'react-bootstrap';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
 const PossessionListPage = () => {
   const [possessions, setPossessions] = useState([]);
-  const [error, setError] = useState(null);
+  const navigate = useNavigate();
 
-  useEffect(() => {
-    const fetchPossessions = async () => {
-      try {
-        const response = await axios.get('/api/possessions'); // Assurez-vous que le proxy est configuré correctement
-        if (response.data.status === 'OK') {
-          setPossessions(response.data.items);
-        } else {
-          setError('Erreur lors de la récupération des possessions: ' + response.data.error);
-        }
-      } catch (error) {
-        setError('Erreur lors de la récupération des possessions: ' + error.message);
+  const fetchPossessions = async () => {
+    try {
+      const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/possessions`);
+      if (response.data.status === 'OK') {
+        console.log('Données reçues:', response.data.items);
+        setPossessions(response.data.items);
+      } else {
+        console.error('Erreur lors de la récupération des possessions:', response.data.error);
       }
-    };
-
-    fetchPossessions();
-  }, []);
-
-  const handleClose = async (libelle) => {
-    if (libelle) {
-      try {
-        await axios.put(`/api/possessions/${libelle}/close`); // Utilisez PUT pour fermer la possession
-        setPossessions(prevPossessions =>
-          prevPossessions.map(p =>
-            p.data.libelle === libelle
-              ? { ...p, data: { ...p.data, dateFin: new Date().toISOString() } }
-              : p
-          )
-        );
-      } catch (error) {
-        setError('Erreur lors de la fermeture de la possession: ' + error.message);
-      }
-    } else {
-      setError('Libelle est null ou undefined');
+    } catch (error) {
+      console.error('Erreur lors de la récupération des possessions:', error);
     }
   };
 
-  const calculateCurrentValue = (possession) => {
-    const { valeur, taux, dateDebut, dateFin } = possession.data;
-    if (!valeur || !taux || !dateDebut) {
-      return 0; // Retournez 0 ou une autre valeur par défaut si les données sont manquantes
-    }
-    const startDate = new Date(dateDebut);
-    const endDate = dateFin ? new Date(dateFin) : new Date();
-    const duration = (endDate - startDate) / (1000 * 60 * 60 * 24 * 365); // Durée en années
+  useEffect(() => {
+    fetchPossessions();
+  }, []);
 
-    return valeur * Math.pow(1 + taux, duration);
+  const handleCreatePossession = () => {
+    navigate('/possession/create');
+  };
+
+  const handleEditPossession = (libelle) => {
+    navigate(`/possession/${libelle}/update`);
+  };
+
+  const handleClosePossession = async (libelle) => {
+    try {
+      const response = await axios.put(`${process.env.REACT_APP_API_URL}/api/possessions/${libelle}/close`);
+      if (response.data.status === 'OK') {
+        console.log('Possession clôturée:', response.data);
+        fetchPossessions(); // Recharger les possessions après la clôture
+      } else {
+        console.error('Erreur lors de la clôture de la possession:', response.data.error);
+      }
+    } catch (error) {
+      console.error('Erreur lors de la clôture de la possession:', error);
+    }
   };
 
   return (
     <Container>
-      <h1>Possessions</h1>
-      <Link to="/possession/create">
-        <Button>Create Possession</Button>
-      </Link>
-      {error && <Alert variant="danger">{error}</Alert>}
-      <Table striped bordered hover>
-        <thead>
-          <tr>
-            <th>Libelle</th>
-            <th>Valeur</th>
-            <th>Date Début</th>
-            <th>Date Fin</th>
-            <th>Taux</th>
-            <th>Valeur Actuelle</th>
-            <th>Action</th>
-          </tr>
-        </thead>
-        <tbody>
-          {possessions.length > 0 ? (
-            possessions.map((possession, index) => (
-              <tr key={index}>
-                <td>{possession.data.libelle}</td>
-                <td>{possession.data.valeur}</td>
-                <td>{possession.data.dateDebut}</td>
-                <td>{possession.data.dateFin || 'En cours'}</td>
-                <td>{possession.data.taux || 'N/A'}</td>
-                <td>{calculateCurrentValue(possession).toFixed(2)}</td>
-                <td>
-                  <Link to={`/possession/${possession.data.libelle}/update`}>Edit</Link>
-                  <Button onClick={() => handleClose(possession.data.libelle)}>Close</Button>
-                </td>
+      <h1>Liste des Possessions</h1>
+      <Row>
+        <Col>
+          <Button onClick={handleCreatePossession} variant="primary">
+            Créer une Possession
+          </Button>
+        </Col>
+      </Row>
+      <Row>
+        <Col>
+          <Table striped bordered hover>
+            <thead>
+              <tr>
+                <th>Libellé</th>
+                <th>Valeur Initiale</th>
+                <th>Date Début</th>
+                <th>Date Fin</th>
+                <th>Amortissement</th>
+                <th>Valeur Actuelle</th>
+                <th>Actions</th>
               </tr>
-            ))
-          ) : (
-            <tr>
-              <td colSpan="7">Aucune possession disponible</td>
-            </tr>
-          )}
-        </tbody>
-      </Table>
+            </thead>
+            <tbody>
+              {possessions.length > 0 ? (
+                possessions.map((possession, index) => (
+                  <tr key={index}>
+                    <td>{possession.libelle || 'Inconnu'}</td>
+                    <td>{possession.valeur ? possession.valeur.toFixed(2) : 'N/A'}</td>
+                    <td>{possession.dateDebut ? new Date(possession.dateDebut).toLocaleDateString() : 'Inconnu'}</td>
+                    <td>{possession.dateFin ? new Date(possession.dateFin).toLocaleDateString() : 'En cours'}</td>
+                    <td>{possession.tauxAmortissement ? `${possession.tauxAmortissement}%` : 'N/A'}</td>
+                    <td>
+                      {possession.valeur && possession.tauxAmortissement
+                        ? (possession.valeur - (possession.valeur * (0.01 * possession.tauxAmortissement))).toFixed(2)
+                        : 'N/A'}
+                    </td>
+                    <td>
+                      <Button onClick={() => handleEditPossession(possession.libelle)} variant="warning" size="sm" className="me-2">
+                        Éditer
+                      </Button>
+                      <Button onClick={() => handleClosePossession(possession.libelle)} variant="danger" size="sm">
+                        Clôturer
+                      </Button>
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan="7">Aucune possession disponible</td>
+                </tr>
+              )}
+            </tbody>
+          </Table>
+        </Col>
+      </Row>
     </Container>
   );
 };

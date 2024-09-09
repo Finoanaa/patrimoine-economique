@@ -1,41 +1,17 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { Routes, Route } from 'react-router-dom';
-import PossessionsTable from './components/PossessionsTable';
-import PatrimoineCalculator from './components/PatrimoineCalculator';
 import Header from './components/Header';
 import Patrimoine from './pages/Patrimoine';
-import PossessionList from './pages/PossessionList';
 import CreatePossession from './pages/CreatePossession';
 import UpdatePossession from './pages/UpdatePossession';
-import { readFile, writeFile } from './api-temp';
-
+import PossessionList from './pages/PossessionList';
+import CreatePossessionButton from './components/CreatePossessionButton';
+import PossessionsTable from './components/PossessionsTable';
+import PatrimoineCalculator from './components/PatrimoineCalculator';
 
 const App = () => {
-  const [possessions, setPossessions] = useState([]);
-  const [patrimoineValue, setPatrimoineValue] = useState(null);
-
-  useEffect(() => {
-    async function fetchData() {
-      const result = await readFile();
-      setPossessions(result);
-    }
-    fetchData();
-  }, []);
-
-  const handleWrite = async () => {
-    const newData = {  };
-    await writeFile(newData);
-    // Recharger les données après écriture si nécessaire
-    const result = await readFile();
-    setPossessions(result);
-  };
-
-  const handleCalculatePatrimoine = (calculatedValue) => {
-    setPatrimoineValue(calculatedValue);
-  };
-
   return (
-    <>
+    <div>
       <Header />
       <Routes>
         <Route path="/patrimoine" element={<Patrimoine />} />
@@ -45,19 +21,13 @@ const App = () => {
         <Route path="/" element={
           <div>
             <h1>Liste des Possessions</h1>
-            <PossessionsTable possessions={possessions} />
-            <button onClick={handleWrite}>Edit</button>
-            <PatrimoineCalculator possessions={possessions} onCalculate={handleCalculatePatrimoine} />
-            {patrimoineValue !== null && (
-              <div>
-                <h2>Valeur du Patrimoine:</h2>
-                <p>{patrimoineValue} €</p>
-              </div>
-            )}
+            <PossessionsTable />
+            <CreatePossessionButton />
+            <PatrimoineCalculator />
           </div>
         } />
       </Routes>
-    </>
+    </div>
   );
 };
 

@@ -5,38 +5,43 @@ const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001'; // Ass
 // Possessions
 export const getPossessions = async () => {
   try {
-    const response = await axios.get('/api/possessions'); // Utiliser l'URL relative si proxy est configuré
-    return response.data.items;
+    const response = await axios.get('/api/possessions');
+    return response.data.items; // Correspond à 'items' renvoyé par le backend
   } catch (error) {
     throw new Error('Erreur lors de la récupération des possessions: ' + error.message);
   }
 };
 
+
 export const closePossession = async (libelle) => {
   try {
-    await axios.put(`/api/possessions/${libelle}/close`);
+    const response = await axios.put(`/api/possessions/${libelle}/close`);
+    return response.data.item; // Correspond à 'item' renvoyé par le backend
   } catch (error) {
     throw new Error('Erreur lors de la fermeture de la possession: ' + error.message);
   }
 };
 
+
 export const createPossession = async (data) => {
   try {
-    const response = await axios.post('/api/possessions', data); // Utiliser l'URL relative si proxy est configuré
-    return response.data.item; // Assurez-vous que cela correspond à ce que renvoie le backend
+    const response = await axios.post('/api/possessions', data);
+    return response.data.item; // Correspond à 'item' renvoyé par le backend
   } catch (error) {
     throw new Error('Erreur lors de la création de la possession: ' + error.message);
   }
 };
 
+
 export const updatePossession = async (libelle, data) => {
   try {
     const response = await axios.put(`/api/possessions/${libelle}`, data);
-    return response.data.item; // Assurez-vous que cela correspond à ce que renvoie le backend
+    return response.data.item; // Correspond à 'item' renvoyé par le backend
   } catch (error) {
     throw new Error(`Erreur lors de la mise à jour de la possession ${libelle}: ` + error.message);
   }
 };
+
 
 
 // Fichiers

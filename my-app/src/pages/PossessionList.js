@@ -1,6 +1,6 @@
 // src/pages/PossessionList.js
 import React from 'react';
-import PossessionListPage from '../components/PossessionListPage';
+import PossessionListPage from '../components/PossessionListPage.js';
 
 const PossessionList = () => (
   <div>

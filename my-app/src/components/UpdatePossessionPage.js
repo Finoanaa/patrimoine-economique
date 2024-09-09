@@ -1,73 +1,107 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { Container, Form, Button } from 'react-bootstrap';
 import axios from 'axios';
-import DatePicker from 'react-datepicker';
-import 'react-datepicker/dist/react-datepicker.css';
-import { Container, Form, Button, Spinner, Alert } from 'react-bootstrap';
+import { useParams, useNavigate } from 'react-router-dom';
 
 const UpdatePossessionPage = () => {
   const { libelle } = useParams();
-  const navigate = useNavigate();
-  const [dateFin, setDateFin] = useState(new Date());
   const [possession, setPossession] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [formData, setFormData] = useState({});
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchPossession = async () => {
       try {
-        // Requête pour récupérer les détails de la possession via Axios
-        const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/possessions/${libelle}`);
-        if (response.data) {
-          setPossession(response.data);
-          setDateFin(new Date(response.data.dateFin || new Date()));
+        const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/possessions/${encodeURIComponent(libelle)}`);
+        if (response.data.status === 'OK') {
+          setPossession(response.data.item);
+          setFormData(response.data.item);
         } else {
-          setError('Données de possession non trouvées');
+          console.error('Erreur lors de la récupération de la possession:', response.data.error);
         }
       } catch (error) {
-        setError('Erreur lors de la récupération des données de possession');
-      } finally {
-        setLoading(false);
+        console.error('Erreur lors de la récupération de la possession:', error);
       }
     };
 
     fetchPossession();
   }, [libelle]);
 
+  const handleChange = (e) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value,
+    });
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (dateFin) {
-      try {
-        // Mise à jour des données de la possession via Axios
-        await axios.put(`${process.env.REACT_APP_API_URL}/api/possessions/${libelle}`, { dateFin: dateFin.toISOString() });
-        navigate('/possessions'); // Redirection vers la liste des possessions après la mise à jour
-      } catch (error) {
-        setError('Erreur lors de la mise à jour de la possession');
+    try {
+      const response = await axios.put(`${process.env.REACT_APP_API_URL}/api/possessions/${encodeURIComponent(libelle)}`, formData);
+      if (response.data.status === 'OK') {
+        navigate('/possessions');
+      } else {
+        console.error('Erreur lors de la mise à jour de la possession:', response.data.error);
       }
-    } else {
-      setError('La date de fin doit être définie');
+    } catch (error) {
+      console.error('Erreur lors de la mise à jour de la possession:', error);
     }
   };
 
-  if (loading) return <Spinner animation="border" />;
-  if (error) return <Alert variant="danger">{error}</Alert>;
+  if (!possession) return <p>Chargement...</p>;
 
   return (
     <Container>
-      <h1>Update Possession</h1>
-      {possession && (
-        <Form onSubmit={handleSubmit}>
-          <Form.Group>
-            <Form.Label>Libelle</Form.Label>
-            <Form.Control type="text" value={possession.libelle} readOnly />
-          </Form.Group>
-          <Form.Group>
-            <Form.Label>Date Fin</Form.Label>
-            <DatePicker selected={dateFin} onChange={date => setDateFin(date)} className="form-control" />
-          </Form.Group>
-          <Button type="submit">Update</Button>
-        </Form>
-      )}
+      <h1>Mettre à jour la Possession</h1>
+      <Form onSubmit={handleSubmit}>
+        <Form.Group controlId="formLibelle">
+          <Form.Label>Libellé</Form.Label>
+          <Form.Control
+            type="text"
+            name="libelle"
+            value={formData.libelle || ''}
+            onChange={handleChange}
+            disabled
+          />
+        </Form.Group>
+        <Form.Group controlId="formValeur">
+          <Form.Label>Valeur</Form.Label>
+          <Form.Control
+            type="number"
+            name="valeur"
+            value={formData.valeur || ''}
+            onChange={handleChange}
+          />
+        </Form.Group>
+        <Form.Group controlId="formDateDebut">
+          <Form.Label>Date de Début</Form.Label>
+          <Form.Control
+            type="date"
+            name="dateDebut"
+            value={formData.dateDebut ? new Date(formData.dateDebut).toISOString().split('T')[0] : ''}
+            onChange={handleChange}
+          />
+        </Form.Group>
+        <Form.Group controlId="formDateFin">
+          <Form.Label>Date de Fin</Form.Label>
+          <Form.Control
+            type="date"
+            name="dateFin"
+            value={formData.dateFin ? new Date(formData.dateFin).toISOString().split('T')[0] : ''}
+            onChange={handleChange}
+          />
+        </Form.Group>
+        <Form.Group controlId="formTauxAmortissement">
+          <Form.Label>Taux d'Amortissement</Form.Label>
+          <Form.Control
+            type="number"
+            name="tauxAmortissement"
+            value={formData.tauxAmortissement || ''}
+            onChange={handleChange}
+          />
+        </Form.Group>
+        <Button variant="primary" type="submit">Mettre à jour</Button>
+      </Form>
     </Container>
   );
 };
